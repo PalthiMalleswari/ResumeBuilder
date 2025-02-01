@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .resume-detail-container {
+        padding: 2rem 0;
+        background-color: #f8f9fa;
+        min-height: calc(100vh - 150px);
+    }
+
+    .resume-card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .resume-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .resume-image-container {
+        position: relative;
+        background-color: #fff;
+        border-bottom: 1px solid #eee;
+    }
+
+    .resume-image {
+        max-height: 500px;
+        width: 100%;
+        object-fit: contain;
+        background-color: #fff;
+    }
+
+    .resume-info {
+        padding: 2rem;
+    }
+
+    .resume-title {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .resume-meta {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #eee;
+    }
+
+    .action-buttons {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 2px solid #eee;
+    }
+
+    .btn-use-template {
+        background-color: #2ecc71;
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-use-template:hover {
+        background-color: #27ae60;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+    }
+
+    .btn-back {
+        background-color: #ecf0f1;
+        color: #34495e;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background-color: #bdc3c7;
+        transform: translateY(-2px);
+    }
+
+    .template-stats {
+        display: flex;
+        gap: 2rem;
+        margin: 1.5rem 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="resume-detail-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="resume-card">
+                    <div class="resume-image-container">
+                        {% if resume.resume_image %}
+                            <img src="{{ resume.resume_image.url }}" 
+                                 alt="{{ resume.resume_name }}" 
+                                 class="resume-image">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center" 
+                                 style="height: 400px; background-color: #f8f9fa;">
+                                <span class="text-muted">No Preview Available</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="resume-info">
+                        <h1 class="resume-title">{{ resume.resume_name }}</h1>
+                        
+                        <div class="resume-meta">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Created: {{ resume.created_at|date:"F d, Y" }}
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock me-2"></i>
+                                    Last Updated: {{ resume.updated_at|date:"F d, Y" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="template-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ resume.rating}}/5</div>
+                                <div class="stat-label">Rating</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{resume.downloads|floatformat:2 }}k+</div>
+                                <div class="stat-label">Downloads</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">ATS</div>
+                                <div class="stat-label">{{resume.ats}}</div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons d-flex gap-3 justify-content-center">
+                            <a href="{% url 'resume-list' %}" class="btn btn-back">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Templates
+                            </a>
+                            <a href="{% url 'use-template' resume.pk %}" class="btn btn-use-template">
+                                <i class="fas fa-plus me-2"></i>Use this Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+{% endblock %}

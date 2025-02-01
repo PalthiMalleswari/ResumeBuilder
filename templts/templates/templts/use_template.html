@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        padding: 2rem 0;
+        background-color: #f8f9fa;
+        min-height: calc(100vh - 150px);
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #f1f1f1;
+    }
+
+    .form-title {
+        color: #2c3e50;
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header {
+        background: white;
+        padding: 1rem 1.5rem;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .section-header:hover {
+        border-color: #2ecc71;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .section-toggle {
+        color: #95a5a6;
+        transition: transform 0.3s ease;
+    }
+
+    .section-content {
+        padding: 1.5rem 0;
+        display: none;
+    }
+
+    .section-content.active {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .field-container {
+        position: relative;
+        margin-bottom: 1.2rem;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .field-container input,
+    .field-container textarea {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .field-container input:focus,
+    .field-container textarea:focus {
+        outline: none;
+        border-color: #2ecc71;
+    }
+
+    .field-label {
+        position: absolute;
+        left: 2rem;
+        top: 0.5rem;
+        transform: translateY(-50%);
+        background: white;
+        padding: 0 0.5rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .field-container input:focus ~ .field-label,
+    .field-container textarea:focus ~ .field-label {
+        color: #2ecc71;
+    }
+
+    .btn-submit {
+        background-color: #2ecc71;
+        color: white;
+        padding: 1rem 3rem;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background-color: #27ae60;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h1 class="form-title">Create Your Resume</h1>
+                        <p class="text-muted">Using template: <span class="template-name">{{ resume.resume_name }}</span></p>
+                    </div>
+
+                    <form method="post" action="{% url 'generate-resume' %}">
+                        {% csrf_token %}
+                        
+                        {% for section_id, section in sections.items %}
+                            <div class="section-container">
+                                <div class="section-header" onclick="toggleSection(this)">
+                                    <h3 class="section-title">{{ section.section_name }}</h3>
+                                    <i class="fas fa-chevron-down section-toggle"></i>
+                                </div>
+                                <div class="section-content">
+                                    {% for field in section.fields|dictsort:"field_order" %}
+                                        <div class="field-container">
+                                            {% if field.field_type == 'textarea' %}
+                                                <textarea 
+                                                    name="field_{{ field.field_id }}" 
+                                                    rows="4"
+                                                    {% if field.field_required %}required{% endif %}
+                                                ></textarea>
+                                            {% else %}
+                                                <input 
+                                                    type="{{ field.field_type|default:'text' }}" 
+                                                    name="field_{{ field.field_id }}"
+                                                    {% if field.field_required %}required{% endif %}
+                                                >
+                                            {% endif %}
+                                            <label class="field-label">{{ field.field_name }}</label>
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-submit">
+                                <i class="fas fa-paper-plane me-2"></i>Generate Resume
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleSection(header) {
+    const content = header.nextElementSibling;
+    const icon = header.querySelector('.section-toggle');
+    const allContents = document.querySelectorAll('.section-content');
+    const allIcons = document.querySelectorAll('.section-toggle');
+    
+    // Close all other sections
+    allContents.forEach(item => {
+        if (item !== content && item.classList.contains('active')) {
+            item.classList.remove('active');
+        }
+    });
+    
+    allIcons.forEach(item => {
+        if (item !== icon) {
+            item.style.transform = 'rotate(0)';
+        }
+    });
+    
+    // Toggle current section
+    content.classList.toggle('active');
+    if (content.classList.contains('active')) {
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+            icon.style.transform = 'rotate(0)';
+        }
+    }
+
+</script>
+<script>
+    function collectFormData() {
+    const formData = {};
+
+    // Iterate over each section
+    document.querySelectorAll('.section-container').forEach(section => {
+        const sectionTitle = section.querySelector('.section-title').textContent.trim();
+        const fields = [];
+
+        // Iterate over each field in the section
+        section.querySelectorAll('.field-container').forEach(fieldContainer => {
+            const input = fieldContainer.querySelector('input, textarea');
+            const fieldName = fieldContainer.querySelector('.field-label').textContent.trim();
+            const fieldId = input ? input.getAttribute('name').replace('field_', '') : null;
+            const fieldType = input ? input.getAttribute('type') || 'textarea' : null;
+            const fieldValue = input ? input.value : null;
+
+            if (input && fieldId && fieldName) {
+                fields.push({
+                    field_id: fieldId,
+                    field_name: fieldName,
+                    field_type: fieldType,
+                    value: fieldValue
+                });
+            }
+        });
+
+        if (sectionTitle && fields.length > 0) {
+            formData[sectionTitle] = fields;
+        }
+    });
+
+    return formData;
+}
+
+document.querySelector("form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const formData = collectFormData();
+    console.log(formData);
+
+    // Use fetch or axios to send the data to the server
+    fetch(this.action, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+        },
+        body: JSON.stringify(formData),
+    }).then((response) => {
+        return response.json();
+    }).then((data) => {
+        console.log("Server response:", data);
+        Swal.fire("Success", "Your data has been submitted successfully!", "success");
+    }).catch((error) => {
+        console.error("Error:", error);
+        Swal.fire("Error", "There was an issue submitting your data.", "error");
+    });
+});
+
+</script>
+
+
+<!-- Add SweetAlert2 for better alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %} 
